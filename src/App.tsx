@@ -481,7 +481,7 @@ export default function App() {
           <span style={{ width: `${progress}%` }} />
         </div>
         <p className="home-meta">
-          {copy.level} {levelIndex + 1} / {levels.length} · {copy.moves} {totalMoves}
+          {copy.level} {levelIndex + 1} / {levels.length}
         </p>
         <label className="player-field">
           <span>

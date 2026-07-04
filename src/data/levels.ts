@@ -2,6 +2,7 @@ import type { ArrowBlock, Direction, LevelData } from '../types';
 import { canEscape } from '../logic/movement';
 
 const directions: Direction[] = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+const totalLevels = 400;
 
 const fixedLevels: LevelData[] = [
   { id: 1, rows: 1, cols: 1, blocks: [{ id: 'b1', row: 0, col: 0, direction: 'RIGHT' }] },
@@ -79,23 +80,35 @@ function createRng(seed: number) {
 }
 
 function getDifficultySpec(id: number): DifficultySpec {
-  if (id <= 8) {
+  if (id <= 10) {
     return { rows: 3, cols: 3, blocks: 9, maxInitialEscapable: 3, maxAverageEscapable: 3.4 };
   }
 
-  if (id <= 12) {
-    return { rows: 3, cols: 3, blocks: 9, maxInitialEscapable: 3, maxAverageEscapable: 3.2 };
+  if (id <= 30) {
+    return { rows: 3, cols: 3, blocks: 9, maxInitialEscapable: 2, maxAverageEscapable: 3.0 };
   }
 
-  if (id <= 18) {
+  if (id <= 80) {
     return { rows: 4, cols: 4, blocks: 15, maxInitialEscapable: 3, maxAverageEscapable: 4.2 };
   }
 
-  if (id <= 24) {
-    return { rows: 4, cols: 4, blocks: 15, maxInitialEscapable: 3, maxAverageEscapable: 4.5 };
+  if (id <= 140) {
+    return { rows: 4, cols: 4, blocks: 15, maxInitialEscapable: 2, maxAverageEscapable: 3.8 };
   }
 
-  return { rows: 5, cols: 5, blocks: 24, maxInitialEscapable: 4, maxAverageEscapable: 5.8 };
+  if (id <= 240) {
+    return { rows: 5, cols: 5, blocks: 24, maxInitialEscapable: 4, maxAverageEscapable: 5.8 };
+  }
+
+  if (id <= 320) {
+    return { rows: 6, cols: 6, blocks: 35, maxInitialEscapable: 5, maxAverageEscapable: 7.4 };
+  }
+
+  if (id <= 370) {
+    return { rows: 6, cols: 6, blocks: 35, maxInitialEscapable: 4, maxAverageEscapable: 6.8 };
+  }
+
+  return { rows: 6, cols: 6, blocks: 35, maxInitialEscapable: 3, maxAverageEscapable: 6.2 };
 }
 
 function getDirectionDelta(direction: Direction) {
@@ -277,12 +290,12 @@ function scoreLevel(blocks: ArrowBlock[], spec: DifficultySpec) {
   );
 }
 
-function generateLevel(id: number): LevelData {
-  const spec = getDifficultySpec(id);
+function generateLevelBlocks(id: number, spec: DifficultySpec) {
   let bestBlocks: ArrowBlock[] | null = null;
   let bestScore = Number.NEGATIVE_INFINITY;
+  const attempts = id <= 140 ? 90 : id <= 320 ? 64 : 180;
 
-  for (let attempt = 0; attempt < 240; attempt += 1) {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
     const blocks = buildCandidateLevel(id, attempt, spec);
     const score = scoreLevel(blocks, spec);
 
@@ -296,15 +309,25 @@ function generateLevel(id: number): LevelData {
     throw new Error(`Failed to generate level ${id}`);
   }
 
+  return bestBlocks;
+}
+
+function createGeneratedLevel(id: number): LevelData {
+  const spec = getDifficultySpec(id);
+  let cachedBlocks: ArrowBlock[] | null = null;
+
   return {
     id,
     rows: spec.rows,
     cols: spec.cols,
-    blocks: bestBlocks,
+    get blocks() {
+      cachedBlocks ??= generateLevelBlocks(id, spec);
+      return cachedBlocks;
+    },
   };
 }
 
 export const levels: LevelData[] = [
   ...fixedLevels,
-  ...Array.from({ length: 25 }, (_, index) => generateLevel(index + 6)),
+  ...Array.from({ length: totalLevels - fixedLevels.length }, (_, index) => createGeneratedLevel(index + fixedLevels.length + 1)),
 ];

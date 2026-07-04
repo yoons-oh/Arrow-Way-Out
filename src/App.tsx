@@ -90,7 +90,7 @@ export default function App() {
   const [locale, setLocale] = useState<LocaleCode>(() => (localStorage.getItem(storageKeys.locale) as LocaleCode | null) ?? detectLocale());
   const [playerName, setPlayerName] = useState(() => localStorage.getItem(storageKeys.playerName) || '');
   const [moves, setMoves] = useState(0);
-  const [blocks, setBlocks] = useState<ArrowBlock[]>(() => levels[levelIndex].blocks);
+  const [blocks, setBlocks] = useState<ArrowBlock[]>(() => levels[levelIndex].blocks.map((block) => ({ ...block })));
   const [escapingId, setEscapingId] = useState<string | null>(null);
   const [blockedId, setBlockedId] = useState<string | null>(null);
   const [hintedId, setHintedId] = useState<string | null>(null);

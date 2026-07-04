@@ -1,4 +1,4 @@
-import { Play, Settings, UserRound } from 'lucide-react';
+import { ListChecks, Play, Settings, UserRound } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { ClearModal } from './components/ClearModal';
 import { GameBoard } from './components/GameBoard';
@@ -9,11 +9,12 @@ import { findEscapableBlock } from './logic/hint';
 import { canEscape } from './logic/movement';
 import type { ArrowBlock, LocaleCode, LevelData, RankingEntry } from './types';
 
-type Screen = 'home' | 'game' | 'settings';
+type Screen = 'home' | 'game' | 'levels' | 'settings';
 
 const storageKeys = {
   currentLevel: 'awo.currentLevel',
   maxLevel: 'awo.maxLevel',
+  clearedLevel: 'awo.clearedLevel',
   totalMoves: 'awo.totalMoves',
   soundOn: 'awo.soundOn',
   locale: 'awo.locale',
@@ -117,6 +118,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>('home');
   const [levelIndex, setLevelIndex] = useState(() => Math.min(readNumber(storageKeys.currentLevel, 1), levels.length) - 1);
   const [maxLevel, setMaxLevel] = useState(() => readNumber(storageKeys.maxLevel, 1));
+  const [clearedLevel, setClearedLevel] = useState(() => readNumber(storageKeys.clearedLevel, Math.max(0, readNumber(storageKeys.maxLevel, 1) - 1)));
   const [totalMoves, setTotalMoves] = useState(() => readNumber(storageKeys.totalMoves, 0));
   const [soundOn, setSoundOn] = useState(() => localStorage.getItem(storageKeys.soundOn) !== 'false');
   const [locale, setLocale] = useState<LocaleCode>(() => (localStorage.getItem(storageKeys.locale) as LocaleCode | null) ?? detectLocale());
@@ -140,6 +142,10 @@ export default function App() {
   const timeLimitMs = useMemo(() => getTimeLimitMs(level), [level]);
   const timeLeftMs = Math.max(0, timeLimitMs - elapsedMs);
   const progress = useMemo(() => Math.round(((levelIndex + 1) / levels.length) * 100), [levelIndex]);
+  const clearedLevelCount = Math.min(clearedLevel, levels.length);
+  const levelSelectTitle = locale === 'ko' ? '레벨 선택' : 'Level Select';
+  const clearedLevelsText = locale === 'ko' ? '클리어한 레벨' : 'Cleared levels';
+  const noClearedLevelsText = locale === 'ko' ? '아직 클리어한 레벨이 없습니다' : 'No cleared levels yet';
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -153,6 +159,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(storageKeys.maxLevel, String(maxLevel));
   }, [maxLevel]);
+
+  useEffect(() => {
+    localStorage.setItem(storageKeys.clearedLevel, String(clearedLevel));
+  }, [clearedLevel]);
 
   useEffect(() => {
     localStorage.setItem(storageKeys.totalMoves, String(totalMoves));
@@ -227,6 +237,7 @@ export default function App() {
     writeRankings(level.id, nextRankings);
     setRankings(nextRankings);
     setCurrentEntryId(saved ? entry.id : null);
+    setClearedLevel((value) => Math.max(value, level.id));
   }
 
   function updatePlayerName(nextName: string) {
@@ -307,10 +318,17 @@ export default function App() {
   function resetProgress() {
     localStorage.removeItem(storageKeys.currentLevel);
     localStorage.removeItem(storageKeys.maxLevel);
+    localStorage.removeItem(storageKeys.clearedLevel);
     localStorage.removeItem(storageKeys.totalMoves);
     setMaxLevel(1);
+    setClearedLevel(0);
     setTotalMoves(0);
     loadLevel(0);
+  }
+
+  function startSelectedLevel(nextIndex: number) {
+    loadLevel(nextIndex);
+    startGame();
   }
 
   if (screen === 'settings') {
@@ -343,6 +361,45 @@ export default function App() {
           </button>
           <button className="main-button" type="button" onClick={() => setScreen('home')}>
             {copy.close}
+          </button>
+        </section>
+      </main>
+    );
+  }
+
+  if (screen === 'levels') {
+    return (
+      <main className="app-shell level-select-shell">
+        <section className="panel level-select-panel">
+          <div className="level-select-head">
+            <div>
+              <p className="eyebrow">{clearedLevelsText}</p>
+              <h1>{levelSelectTitle}</h1>
+            </div>
+            <p>
+              {clearedLevelCount} / {levels.length}
+            </p>
+          </div>
+
+          {clearedLevelCount === 0 ? (
+            <p className="empty-levels">{noClearedLevelsText}</p>
+          ) : (
+            <div className="level-grid" aria-label={levelSelectTitle}>
+              {Array.from({ length: clearedLevelCount }, (_, index) => (
+                <button
+                  key={levels[index].id}
+                  className={index === levelIndex ? 'level-chip current' : 'level-chip'}
+                  type="button"
+                  onClick={() => startSelectedLevel(index)}
+                >
+                  {levels[index].id}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <button className="text-button" type="button" onClick={() => setScreen('home')}>
+            {copy.home}
           </button>
         </section>
       </main>
@@ -439,6 +496,10 @@ export default function App() {
         <button className="main-button" type="button" onClick={startGame}>
           <Play size={20} fill="currentColor" strokeWidth={2.4} />
           {maxLevel > 1 ? copy.continue : copy.play}
+        </button>
+        <button className="text-button" type="button" onClick={() => setScreen('levels')}>
+          <ListChecks size={18} strokeWidth={2.4} />
+          {levelSelectTitle}
         </button>
         <button className="text-button" type="button" onClick={() => setScreen('settings')}>
           <Settings size={18} strokeWidth={2.4} />

@@ -183,7 +183,6 @@ button {
   background: transparent;
   box-shadow:
     0 18px 30px rgba(62, 86, 188, 0.24),
-    0 7px 0 #2f4fd1,
     inset 0 2px 0 rgba(255, 255, 255, 0.24),
     inset 0 -6px 0 rgba(22, 38, 104, 0.16);
 }
@@ -213,7 +212,6 @@ button {
   background: transparent;
   box-shadow:
     0 18px 30px rgba(255, 141, 72, 0.22),
-    0 7px 0 #e87735,
     inset 0 2px 0 rgba(255, 255, 255, 0.26),
     inset 0 -6px 0 rgba(172, 93, 22, 0.16);
 }

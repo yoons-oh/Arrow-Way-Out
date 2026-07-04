@@ -519,16 +519,18 @@ h1 {
 }
 
 .game-board {
+  --board-width: 424px;
+  --board-gap: 10px;
+  --board-pad: 14px;
   display: grid;
   position: relative;
-  width: min(88vw, 424px);
-  height: min(88vw, 424px);
-  max-height: 64vh;
+  width: min(100%, calc(100vw - 36px), var(--board-width));
+  max-width: var(--board-width);
   aspect-ratio: 1 / 1;
-  gap: clamp(8px, 2.1vw, 12px);
+  gap: var(--board-gap);
   border: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 8px;
-  padding: clamp(12px, 3vw, 18px);
+  padding: var(--board-pad);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.28)),
     var(--board);
@@ -540,7 +542,7 @@ h1 {
 .game-board::before {
   content: "";
   position: absolute;
-  inset: clamp(12px, 3vw, 18px);
+  inset: var(--board-pad);
   border-radius: 8px;
   background-image: linear-gradient(rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0.48));
   opacity: 0.36;
@@ -615,7 +617,7 @@ h1 {
 .arrow-glyph img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: fill;
   user-select: none;
   filter: none;
   pointer-events: none;
@@ -928,11 +930,6 @@ h1 {
 @media (max-height: 680px) {
   .app-shell {
     padding-top: 12px;
-  }
-
-  .game-board {
-    width: min(78vw, 380px);
-    height: min(78vw, 380px);
   }
 
   .topbar {

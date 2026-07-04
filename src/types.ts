@@ -18,6 +18,7 @@ export type LocaleCode = 'ko' | 'en' | 'es' | 'ja' | 'zh-CN' | 'pt-BR';
 
 export type RankingEntry = {
   id: string;
+  levelId: number;
   name: string;
   timeMs: number;
   moves: number;

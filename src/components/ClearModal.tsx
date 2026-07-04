@@ -4,6 +4,7 @@ import type { RankingEntry } from '../types';
 
 type Props = {
   copy: (typeof messages)['en'];
+  levelNumber: number;
   moves: number;
   elapsedMs: number;
   isLastLevel: boolean;
@@ -18,6 +19,7 @@ type Props = {
 
 export function ClearModal({
   copy,
+  levelNumber,
   moves,
   elapsedMs,
   isLastLevel,
@@ -51,7 +53,9 @@ export function ClearModal({
           </label>
         )}
         <section className="ranking-board">
-          <h3>{copy.ranking}</h3>
+          <h3>
+            {copy.level} {levelNumber} · {copy.ranking}
+          </h3>
           {rankings.length === 0 ? (
             <p className="empty-ranking">{copy.noRecords}</p>
           ) : (

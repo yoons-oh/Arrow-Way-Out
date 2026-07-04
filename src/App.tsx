@@ -50,7 +50,12 @@ function readRankings(levelId: number): RankingEntry[] {
     const raw = localStorage.getItem(getRankingKey(levelId));
     if (!raw) return [];
     const parsed = JSON.parse(raw) as RankingEntry[];
-    return Array.isArray(parsed) ? parsed.slice(0, 5) : [];
+    return Array.isArray(parsed)
+      ? parsed
+          .filter((entry) => entry.levelId === undefined || entry.levelId === levelId)
+          .map((entry) => ({ ...entry, levelId }))
+          .slice(0, 5)
+      : [];
   } catch {
     return [];
   }
@@ -183,6 +188,7 @@ export default function App() {
     const cleanName = playerName.trim() || 'Player';
     const entry: RankingEntry = {
       id: `${level.id}-${Date.now()}`,
+      levelId: level.id,
       name: cleanName,
       timeMs: finalMs,
       moves: finalMoves,
@@ -356,6 +362,7 @@ export default function App() {
         {cleared && (
           <ClearModal
             copy={copy}
+            levelNumber={level.id}
             moves={moves}
             elapsedMs={elapsedMs}
             isLastLevel={isLastLevel}

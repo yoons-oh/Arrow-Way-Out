@@ -45,24 +45,51 @@ function formatTime(ms: number) {
   return minutes > 0 ? `${minutes}:${seconds.toString().padStart(2, '0')}.${tenths}` : `${seconds}.${tenths}s`;
 }
 
+function getPlayerKey(name: string) {
+  return (name.trim() || 'Player').toLocaleLowerCase();
+}
+
+function compareRankingEntries(a: RankingEntry, b: RankingEntry) {
+  return a.timeMs - b.timeMs || a.moves - b.moves || a.date.localeCompare(b.date);
+}
+
+function compactRankings(levelId: number, entries: RankingEntry[]) {
+  const bestByPlayer = new Map<string, RankingEntry>();
+
+  for (const entry of entries) {
+    if (entry.levelId !== levelId) {
+      continue;
+    }
+
+    const normalizedEntry = {
+      ...entry,
+      levelId,
+      name: entry.name.trim() || 'Player',
+    };
+    const playerKey = getPlayerKey(normalizedEntry.name);
+    const previousEntry = bestByPlayer.get(playerKey);
+
+    if (!previousEntry || compareRankingEntries(normalizedEntry, previousEntry) < 0) {
+      bestByPlayer.set(playerKey, normalizedEntry);
+    }
+  }
+
+  return Array.from(bestByPlayer.values()).sort(compareRankingEntries).slice(0, 5);
+}
+
 function readRankings(levelId: number): RankingEntry[] {
   try {
     const raw = localStorage.getItem(getRankingKey(levelId));
     if (!raw) return [];
     const parsed = JSON.parse(raw) as RankingEntry[];
-    return Array.isArray(parsed)
-      ? parsed
-          .filter((entry) => entry.levelId === undefined || entry.levelId === levelId)
-          .map((entry) => ({ ...entry, levelId }))
-          .slice(0, 5)
-      : [];
+    return Array.isArray(parsed) ? compactRankings(levelId, parsed) : [];
   } catch {
     return [];
   }
 }
 
 function writeRankings(levelId: number, rankings: RankingEntry[]) {
-  localStorage.setItem(getRankingKey(levelId), JSON.stringify(rankings.slice(0, 5)));
+  localStorage.setItem(getRankingKey(levelId), JSON.stringify(compactRankings(levelId, rankings)));
 }
 
 function playTone(enabled: boolean, type: 'tap' | 'escape' | 'blocked' | 'clear') {
@@ -194,9 +221,7 @@ export default function App() {
       moves: finalMoves,
       date: new Date().toISOString(),
     };
-    const nextRankings = [...readRankings(level.id), entry]
-      .sort((a, b) => a.timeMs - b.timeMs || a.moves - b.moves)
-      .slice(0, 5);
+    const nextRankings = compactRankings(level.id, [...readRankings(level.id), entry]);
     const saved = nextRankings.some((item) => item.id === entry.id);
 
     writeRankings(level.id, nextRankings);
@@ -213,9 +238,13 @@ export default function App() {
     }
 
     const cleanName = nextName.trim() || 'Player';
-    const nextRankings = rankings.map((entry) => (entry.id === currentEntryId ? { ...entry, name: cleanName } : entry));
+    const nextRankings = compactRankings(
+      level.id,
+      rankings.map((entry) => (entry.id === currentEntryId ? { ...entry, name: cleanName } : entry)),
+    );
     setRankings(nextRankings);
     writeRankings(level.id, nextRankings);
+    setCurrentEntryId(nextRankings.some((entry) => entry.id === currentEntryId) ? currentEntryId : null);
   }
 
   function handleBlockTap(blockId: string) {

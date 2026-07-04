@@ -255,13 +255,30 @@ h1 {
   gap: 8px;
 }
 
-.player-field span {
+.player-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.player-field-title {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   color: #35405a;
   font-size: 0.9rem;
   font-weight: 900;
+}
+
+.required-badge {
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: #7a4a00;
+  background: rgba(255, 200, 87, 0.24);
+  box-shadow: inset 0 0 0 1px rgba(255, 184, 79, 0.32);
+  font-size: 0.74rem;
+  font-weight: 950;
 }
 
 .player-field input {
@@ -281,12 +298,40 @@ h1 {
   outline: none;
 }
 
+.player-hint {
+  color: #69758d;
+  font-size: 0.8rem;
+  font-weight: 820;
+}
+
 .player-field input:focus {
   box-shadow:
     0 5px 0 rgba(69, 97, 222, 0.28),
     0 0 0 4px rgba(85, 119, 242, 0.14),
     inset 0 2px 0 rgba(255, 255, 255, 0.88),
     inset 0 0 0 1px rgba(85, 119, 242, 0.34);
+}
+
+.player-field.invalid .player-field-title,
+.player-field.invalid .player-hint {
+  color: #a9324d;
+}
+
+.player-field.invalid .required-badge {
+  color: #fff;
+  background: var(--red);
+  box-shadow:
+    0 4px 0 rgba(169, 50, 77, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+
+.player-field.invalid input {
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    0 5px 0 rgba(169, 50, 77, 0.2),
+    0 0 0 4px rgba(255, 90, 112, 0.14),
+    inset 0 2px 0 rgba(255, 255, 255, 0.88),
+    inset 0 0 0 1px rgba(255, 90, 112, 0.42);
 }
 
 .progress-track {

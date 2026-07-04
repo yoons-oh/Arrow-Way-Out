@@ -135,6 +135,7 @@ export default function App() {
   const [rankings, setRankings] = useState<RankingEntry[]>(() => readRankings(levels[levelIndex].id));
   const [currentEntryId, setCurrentEntryId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [playerNameError, setPlayerNameError] = useState(false);
 
   const level = levels[levelIndex];
   const copy = messages[locale] ?? messages.en;
@@ -146,6 +147,10 @@ export default function App() {
   const levelSelectTitle = locale === 'ko' ? '레벨 선택' : 'Level Select';
   const clearedLevelsText = locale === 'ko' ? '클리어한 레벨' : 'Cleared levels';
   const noClearedLevelsText = locale === 'ko' ? '아직 클리어한 레벨이 없습니다' : 'No cleared levels yet';
+  const requiredLabel = locale === 'ko' ? '필수' : 'Required';
+  const playerNamePlaceholder = locale === 'ko' ? '이름을 입력하세요' : 'Enter your name';
+  const playerNameHintText = locale === 'ko' ? '랭킹에 표시될 이름입니다.' : 'This name will appear on rankings.';
+  const playerNameRequiredText = locale === 'ko' ? '이름을 입력해야 플레이할 수 있어요.' : 'Enter your name to play.';
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -207,8 +212,20 @@ export default function App() {
     setMaxLevel((value) => Math.max(value, nextIndex + 1));
   }
 
-  function startGame() {
-    const cleanName = playerName.trim() || 'Player';
+  function startGame(nextIndex = levelIndex) {
+    const cleanName = playerName.trim();
+
+    if (!cleanName) {
+      setPlayerNameError(true);
+      setScreen('home');
+      return;
+    }
+
+    if (nextIndex !== levelIndex) {
+      loadLevel(nextIndex);
+    }
+
+    setPlayerNameError(false);
     setPlayerName(cleanName);
     localStorage.setItem(storageKeys.playerName, cleanName);
     setLevelStartedAt(Date.now());
@@ -243,6 +260,10 @@ export default function App() {
   function updatePlayerName(nextName: string) {
     setPlayerName(nextName);
     localStorage.setItem(storageKeys.playerName, nextName);
+
+    if (nextName.trim()) {
+      setPlayerNameError(false);
+    }
 
     if (!currentEntryId) {
       return;
@@ -327,8 +348,7 @@ export default function App() {
   }
 
   function startSelectedLevel(nextIndex: number) {
-    loadLevel(nextIndex);
-    startGame();
+    startGame(nextIndex);
   }
 
   if (screen === 'settings') {
@@ -483,19 +503,28 @@ export default function App() {
         <p className="home-meta">
           {copy.level} {levelIndex + 1} / {levels.length}
         </p>
-        <label className="player-field">
-          <span>
-            <UserRound size={18} strokeWidth={2.4} />
-            {copy.playerName}
+        <label className={playerNameError ? 'player-field invalid' : 'player-field'}>
+          <span className="player-field-header">
+            <span className="player-field-title">
+              <UserRound size={18} strokeWidth={2.4} />
+              {copy.playerName}
+            </span>
+            <span className="required-badge">{requiredLabel}</span>
           </span>
           <input
+            aria-describedby="player-name-help"
+            aria-invalid={playerNameError}
             maxLength={14}
+            required
             value={playerName}
             onChange={(event) => updatePlayerName(event.target.value)}
-            placeholder="Player"
+            placeholder={playerNamePlaceholder}
           />
+          <span className="player-hint" id="player-name-help">
+            {playerNameError ? playerNameRequiredText : playerNameHintText}
+          </span>
         </label>
-        <button className="main-button" type="button" onClick={startGame}>
+        <button className="main-button" type="button" onClick={() => startGame()}>
           <Play size={20} fill="currentColor" strokeWidth={2.4} />
           {maxLevel > 1 ? copy.continue : copy.play}
         </button>

@@ -1,0 +1,28 @@
+{
+  "name": "arrow-way-out",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "check:levels": "tsx src/tools/checkLevels.ts",
+    "build": "npm run check:levels && tsc && vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "latest",
+    "@vitejs/plugin-react": "latest",
+    "autoprefixer": "latest",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "tailwindcss": "latest",
+    "typescript": "latest",
+    "vite": "latest"
+  },
+  "devDependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "tsx": "latest"
+  }
+}

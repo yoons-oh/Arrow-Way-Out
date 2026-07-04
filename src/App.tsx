@@ -457,8 +457,10 @@ export default function App() {
             playerName={playerName}
             onPlayerNameChange={updatePlayerName}
             formatTime={formatTime}
+            levelSelectLabel={levelSelectTitle}
             onNext={nextLevel}
             onHome={() => setScreen('home')}
+            onLevelSelect={() => setScreen('levels')}
           />
         )}
       </main>

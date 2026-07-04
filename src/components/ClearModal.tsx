@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Home, Sparkles } from 'lucide-react';
+import { ArrowRight, Check, Home, ListChecks, Sparkles } from 'lucide-react';
 import type { messages } from '../i18n';
 import type { RankingEntry } from '../types';
 
@@ -13,8 +13,10 @@ type Props = {
   playerName: string;
   onPlayerNameChange: (name: string) => void;
   formatTime: (ms: number) => string;
+  levelSelectLabel: string;
   onNext: () => void;
   onHome: () => void;
+  onLevelSelect: () => void;
 };
 
 export function ClearModal({
@@ -28,8 +30,10 @@ export function ClearModal({
   playerName,
   onPlayerNameChange,
   formatTime,
+  levelSelectLabel,
   onNext,
   onHome,
+  onLevelSelect,
 }: Props) {
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
@@ -74,6 +78,10 @@ export function ClearModal({
           <button className="text-button" type="button" onClick={onHome}>
             <Home size={18} strokeWidth={2.5} />
             {copy.home}
+          </button>
+          <button className="text-button" type="button" onClick={onLevelSelect}>
+            <ListChecks size={18} strokeWidth={2.5} />
+            {levelSelectLabel}
           </button>
           {!isLastLevel && (
             <button className="main-button compact" type="button" onClick={onNext}>
